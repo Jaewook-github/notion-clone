@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} - Notion Clone{% endblock %}
+
+{% block content %}
+<div class="notion-page">
+    <div class="mb-4">
+        <input type="text" 
+               class="text-2xl font-bold w-full border-none focus:outline-none"
+               value="{{ page.title }}"
+               placeholder="Untitled">
+    </div>
+
+    <div class="notion-editor" contenteditable="true">
+        {{ page.content | safe }}
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    const editor = new NotionEditor(document.querySelector('.notion-editor'));
+</script>
+{% endblock %}
+{% endblock %}

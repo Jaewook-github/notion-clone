@@ -1,0 +1,27 @@
+
+{% extends "base.html" %}
+
+{% block title %}Pages - Notion Clone{% endblock %}
+
+{% block content %}
+<div class="notion-page">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">My Pages</h1>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onclick="createNewPage()">
+            New Page
+        </button>
+    </div>
+
+    <div class="grid gap-4">
+        {% for page in pages %}
+        <div class="bg-white p-4 rounded shadow">
+            <a href="{{ url_for('page', id=page.id) }}" class="block">
+                <h2 class="text-xl font-semibold">{{ page.title }}</h2>
+                <p class="text-gray-600 mt-2">Last edited: {{ page.updated_at }}</p>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

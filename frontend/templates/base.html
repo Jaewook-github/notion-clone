@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Notion Clone{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/alpine.js') }}" defer></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    <!-- 사이드바 -->
+    <div class="flex h-screen">
+        <div class="w-64 bg-gray-800 text-white">
+            <div class="p-4">
+                <h1 class="text-xl font-bold">My Workspace</h1>
+            </div>
+            <nav class="mt-4">
+                {% block sidebar %}
+                <a href="{{ url_for('pages') }}" class="block py-2 px-4 hover:bg-gray-700">페이지</a>
+                <a href="{{ url_for('databases') }}" class="block py-2 px-4 hover:bg-gray-700">데이터베이스</a>
+                {% endblock %}
+            </nav>
+        </div>
+
+        <!-- 메인 콘텐츠 -->
+        <div class="flex-1 overflow-auto">
+            <header class="bg-white shadow">
+                <div class="px-4 py-6">
+                    {% block header %}{% endblock %}
+                </div>
+            </header>
+
+            <main class="container mx-auto px-4 py-6">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

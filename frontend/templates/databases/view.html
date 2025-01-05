@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}{{ database.name }} - Notion Clone{% endblock %}
+
+{% block content %}
+<div class="notion-page">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold">{{ database.name }}</h1>
+            <div class="flex gap-2">
+                <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+                        onclick="changeView('table')">Table</button>
+                <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+                        onclick="changeView('board')">Board</button>
+                <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+                        onclick="changeView('calendar')">Calendar</button>
+                <button class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+                        onclick="changeView('gallery')">Gallery</button>
+            </div>
+        </div>
+
+        <!-- 필터 및 정렬 옵션 -->
+        <div class="flex gap-4 mt-4">
+            <div class="relative">
+                <button class="bg-white px-4 py-2 rounded border hover:bg-gray-50"
+                        onclick="toggleFilters()">
+                    Filter
+                </button>
+                <div id="filterMenu" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded shadow-lg border">
+                    <!-- 필터 메뉴 내용 -->
+                </div>
+            </div>
+            <div class="relative">
+                <button class="bg-white px-4 py-2 rounded border hover:bg-gray-50"
+                        onclick="toggleSort()">
+                    Sort
+                </button>
+                <div id="sortMenu" class="hidden absolute top-full left-0 mt-1 w-64 bg-white rounded shadow-lg border">
+                    <!-- 정렬 메뉴 내용 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 테이블 뷰 -->
+    <div id="tableView" class="notion-db-table-container">
+        <table class="notion-db-table">
+            <thead>
+                <tr>
+                    {% for column in database.schema %}
+                    <th>{{ column.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    {% for column in database.schema %}
+                    <td>{{ record.data[column.id] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 보드 뷰 -->
+    <div id="boardView" class="notion-board hidden">
+        {% for status in database.schema.status.options %}
+        <div class="notion-board-column">
+            <h3 class="font-semibold mb-2">{{ status }}</h3>
+            <div class="notion-board-items">
+                {% for record in records if record.data.status == status %}
+                <div class="notion-card">
+                    {% for column in database.schema %}
+                    {% if column.id != 'status' %}
+                    <div class="notion-property">
+                        <span class="text-sm text-gray-600">{{ column.name }}:</span>
+                        <span>{{ record.data[column.id] }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 캘린더 뷰 -->
+    <div id="calendarView" class="notion-calendar hidden">
+        <div class="grid grid-cols-7 gap-1">
+            {% for day in calendar_days %}
+            <div class="notion-calendar-day p-2 border min-h-[100px]">
+                <div class="text-sm text-gray-600">{{ day.date }}</div>
+                {% for record in day.records %}
+                <div class="notion-calendar-item p-1 bg-blue-100 rounded mt-1">
+                    {{ record.title }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 갤러리 뷰 -->
+    <div id="galleryView" class="notion-card-grid hidden">
+        {% for record in records %}
+        <div class="notion-card">
+            {% if record.cover_image %}
+            <img src="{{ record.cover_image }}" class="w-full h-32 object-cover rounded-t">
+            {% endif %}
+            <div class="p-4">
+                <h3 class="font-semibold">{{ record.title }}</h3>
+                {% for column in database.schema %}
+                {% if column.id != 'title' %}
+                <div class="notion-property mt-2">
+                    <span class="text-sm text-gray-600">{{ column.name }}:</span>
+                    <span>{{ record.data[column.id] }}</span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    let currentView = 'table';
+
+    function changeView(viewType) {
+        // 모든 뷰 숨기기
+        document.getElementById('tableView').classList.add('hidden');
+        document.getElementById('boardView').classList.add('hidden');
+        document.getElementById('calendarView').classList.add('hidden');
+        document.getElementById('galleryView').classList.add('hidden');
+
+        // 선택한 뷰 보이기
+        document.getElementById(`${viewType}View`).classList.remove('hidden');
+        currentView = viewType;
+    }
+
+    function toggleFilters() {
+        const filterMenu = document.getElementById('filterMenu');
+        filterMenu.classList.toggle('hidden');
+    }
+
+    function toggleSort() {
+        const sortMenu = document.getElementById('sortMenu');
+        sortMenu.classList.toggle('hidden');
+    }
+
+    // 드래그 앤 드롭 초기화
+    const boardItems = document.querySelectorAll('.notion-board-items');
+    boardItems.forEach(container => {
+        new DragAndDrop(container);
+    });
+</script>
+{% endblock %}
+{% endblock %}

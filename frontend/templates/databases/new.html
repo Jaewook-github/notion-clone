@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}New Database - Notion Clone{% endblock %}
+
+{% block content %}
+<div class="notion-page">
+    <h1 class="text-2xl font-bold mb-6">Create New Database</h1>
+
+    <form id="newDatabaseForm" class="space-y-6">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Database Name</label>
+            <input type="text" name="name" 
+                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Properties</label>
+            <div id="properties" class="space-y-4">
+                <!-- 속성 입력 필드들이 여기에 동적으로 추가됨 -->
+            </div>
+            <button type="button" 
+                    onclick="addProperty()"
+                    class="mt-2 text-sm text-blue-600 hover:text-blue-500">
+                + Add property
+            </button>
+        </div>
+
+        <div class="flex justify-end">
+            <button type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Create Database
+            </button>
+        </div>
+    </form>
+</div>
+
+{% block scripts %}
+<script>
+let propertyCount = 0;
+
+function addProperty() {
+    const propertiesContainer = document.getElementById('properties');
+    const propertyDiv = document.createElement('div');
+    propertyDiv.innerHTML = `
+        <div class="flex gap-4 items-start">
+            <div class="flex-1">
+                <input type="text" 
+                       name="property_name_${propertyCount}"
+                       placeholder="Property name"
+                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <div class="flex-1">
+                <select name="property_type_${propertyCount}"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="select">Select</option>
+                    <option value="multi_select">Multi-select</option>
+                    <option value="date">Date</option>
+                    <option value="checkbox">Checkbox</option>
+                    <option value="url">URL</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone</option>
+                </select>
+            </div>
+            <button type="button" 
+                    onclick="this.parentElement.remove()"
+                    class="text-red-600 hover:text-red-500">
+                Remove
+            </button>
+        </div>
+    `;
+    propertiesContainer.appendChild(propertyDiv);
+    propertyCount++;
+}
+
+document.getElementById('newDatabaseForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // 폼 데이터 수집
+    const formData = new FormData(e.target);
+    const properties = {};
+    
+    for (let i = 0; i < propertyCount; i++) {
+        const name = formData.get(`property_name_${i}`);
+        const type = formData.get(`property_type_${i}`);
+        if (name && type) {
+            properties[name] = { type };
+        }
+    }
+    
+    const databaseData = {
+        name: formData.get('name'),
+        schema: properties
+    };
+    
+    try {
+        const response = await fetch('/api/v1/databases', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(databaseData)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            window.location.href = `/databases/${result.id}`;
+        } else {
+            throw new Error('Failed to create database');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to create database');
+    }
+});
+
+// 기본 속성 하나 추가
+addProperty();
+</script>
+{% endblock %}
+{% endblock %}
